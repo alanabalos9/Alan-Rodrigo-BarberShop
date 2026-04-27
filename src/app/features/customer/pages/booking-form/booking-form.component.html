@@ -1,1 +1,44 @@
-<p>booking-form works!</p>
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card shadow border-0">
+        <div class="card-header bg-dark text-white p-3">
+          <h4 class="mb-0"><i class="bi bi-scissors me-2"></i>Nueva Reserva</h4>
+        </div>
+        <div class="card-body p-4">
+          <form [formGroup]="bookingForm" (ngSubmit)="onSubmit()">
+            
+            <mat-form-field appearance="outline" class="w-100 mb-3">
+              <mat-label>Nombre del Cliente</mat-label>
+              <input matInput formControlName="cliente" placeholder="Ej: Alan Rodrigo">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="w-100 mb-3">
+              <mat-label>Seleccionar Barbero</mat-label>
+              <mat-select formControlName="barbero">
+                <mat-option value="alan">Alan (Clásicos)</mat-option>
+                <mat-option value="rodrigo">Rodrigo (Modernos)</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="w-100 mb-4">
+              <mat-label>Servicio</mat-label>
+              <mat-select formControlName="servicio">
+                <mat-option value="corte">Corte</mat-option>
+                <mat-option value="barba">Barba</mat-option>
+                <mat-option value="completo">Corte + Barba</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <div class="d-grid">
+              <button mat-raised-button color="primary" type="submit" [disabled]="bookingForm.invalid">
+                Confirmar Turno
+              </button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
