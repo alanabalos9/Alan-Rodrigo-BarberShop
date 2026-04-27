@@ -1,1 +1,46 @@
-<p>dashboard works!</p>
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-4 mb-4">
+      <div class="card bg-success text-white shadow">
+        <div class="card-body">
+          <h5>Ganancia del Día</h5>
+          <h2>${{ totalDia }}</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow">
+    <div class="card-header bg-dark text-white">Turnos Pendientes</div>
+    <div class="card-body">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Servicio</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let turno of turnos">
+            <td>{{ turno.cliente }}</td>
+            <td>{{ turno.servicio }}</td>
+            <td>
+              <span class="badge" [ngClass]="turno.estado === 'pendiente' ? 'bg-warning' : 'bg-success'">
+                {{ turno.estado }}
+              </span>
+            </td>
+            <td>
+              <button *ngIf="turno.estado === 'pendiente'" 
+                      (click)="completarTurno(turno.id)" 
+                      class="btn btn-sm btn-outline-primary">
+                Confirmar Asistencia
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
