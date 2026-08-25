@@ -1,1 +1,78 @@
-<router-outlet></router-outlet>
+<div style="max-width: 900px; margin: 40px auto; font-family: 'Roboto', sans-serif; padding: 0 20px;">
+  
+  <header style="text-align: center; margin-bottom: 40px;">
+    <h1 style="color: #1a202c; margin-bottom: 8px;">💈 Gestión de Turnos - Barbería</h1>
+    <p style="color: #718096; margin: 0;">Consulta, registro y eliminación de turnos mediante API REST</p>
+  </header>
+
+  <!-- FORMULARIO DE ALTA -->
+  <section style="background-color: #f7fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 24px; margin-bottom: 40px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+    <h2 style="font-size: 1.25rem; color: #2d3748; margin-top: 0; margin-bottom: 16px;">Nuevo Turno</h2>
+    
+    <form (ngSubmit)="crearTurno()" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+      <div>
+        <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #4a5568; margin-bottom: 4px;">Nombre</label>
+        <input type="text" [(ngModel)]="nuevoTurno.Nombre" name="Nombre" required placeholder="Ej. Juan" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e0; border-radius: 4px; box-sizing: border-box;">
+      </div>
+
+      <div>
+        <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #4a5568; margin-bottom: 4px;">Apellido</label>
+        <input type="text" [(ngModel)]="nuevoTurno.Apellido" name="Apellido" required placeholder="Ej. Pérez" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e0; border-radius: 4px; box-sizing: border-box;">
+      </div>
+
+      <div>
+        <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #4a5568; margin-bottom: 4px;">Barbero</label>
+        <input type="text" [(ngModel)]="nuevoTurno.Barbero" name="Barbero" placeholder="Ej. Alan" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e0; border-radius: 4px; box-sizing: border-box;">
+      </div>
+
+      <div>
+        <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #4a5568; margin-bottom: 4px;">Servicio</label>
+        <input type="text" [(ngModel)]="nuevoTurno.Servicio" name="Servicio" placeholder="Ej. Corte y Barba" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e0; border-radius: 4px; box-sizing: border-box;">
+      </div>
+
+      <div style="grid-column: 1 / -1; margin-top: 8px;">
+        <button type="submit" style="background-color: #3182ce; color: white; padding: 10px 20px; border: none; border-radius: 4px; font-weight: 600; cursor: pointer;">
+          Guardar Turno
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <!-- LISTADO DE TURNOS -->
+  <section>
+    <h2 style="font-size: 1.25rem; color: #2d3748; margin-bottom: 16px;">Listado de Turnos Registrados</h2>
+
+    <div *ngIf="datos.length === 0" style="text-align: center; color: #a0aec0; padding: 20px;">
+      Cargando turnos desde MockAPI o la lista está vacía...
+    </div>
+
+    <table *ngIf="datos.length > 0" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.95rem;">
+      <thead>
+        <tr style="background-color: #edf2f7; border-bottom: 2px solid #cbd5e0;">
+          <th style="padding: 12px;">Cliente</th>
+          <th style="padding: 12px;">Barbero</th>
+          <th style="padding: 12px;">Servicio</th>
+          <th style="padding: 12px; text-align: center;">Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of datos" style="border-bottom: 1px solid #e2e8f0;">
+          <td style="padding: 12px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <img *ngIf="item.FotoPerfil" [src]="item.FotoPerfil" style="width: 32px; height: 32px; border-radius: 50%;" alt="Avatar">
+              <span><strong>{{ item.Nombre }} {{ item.Apellido }}</strong></span>
+            </div>
+          </td>
+          <td style="padding: 12px;">{{ item.Barbero || '-' }}</td>
+          <td style="padding: 12px;">{{ item.Servicio || '-' }}</td>
+          <td style="padding: 12px; text-align: center;">
+            <button (click)="borrarItem(item.id)" style="background-color: #e53e3e; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">
+              Eliminar
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+</div>
