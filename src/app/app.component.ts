@@ -1,12 +1,19 @@
 import { Component, OnInit } from '@angular/core';
-import { ApiService } from '../services/api.service';
+import { ApiService, Turno } from './services/api.service';
 
 @Component({
-  selector: 'app-mi-vista',
-  templateUrl: './mi-vista.component.html'
+  selector: 'app-root',
+  templateUrl: './app.component.html'
 })
-export class MiVistaComponent implements OnInit {
-  datos: any[] = [];
+export class AppComponent implements OnInit {
+  datos: Turno[] = [];
+
+  nuevoTurno: Turno = {
+    Nombre: '',
+    Apellido: '',
+    Barbero: '',
+    Servicio: ''
+  };
 
   constructor(private apiService: ApiService) {}
 
@@ -15,10 +22,27 @@ export class MiVistaComponent implements OnInit {
   }
 
   obtenerDatos(): void {
-    this.apiService.getDatos().subscribe(res => this.datos = res);
+    this.apiService.getDatos().subscribe({
+      next: (res) => this.datos = res,
+      error: (err) => console.error('Error al obtener turnos:', err)
+    });
   }
 
-  borrarItem(id: number): void {
-    this.apiService.eliminarDato(id).subscribe(() => this.obtenerDatos());
+  crearTurno(): void {
+    if (!this.nuevoTurno.Nombre || !this.nuevoTurno.Apellido) return;
+
+    this.apiService.crearDato(this.nuevoTurno).subscribe({
+      next: () => {
+        this.obtenerDatos();
+        this.nuevoTurno = { Nombre: '', Apellido: '', Barbero: '', Servicio: '' };
+      }
+    });
+  }
+
+  borrarItem(id?: string): void {
+    if (!id) return;
+    this.apiService.eliminarDato(id).subscribe({
+      next: () => this.obtenerDatos()
+    });
   }
 }
