@@ -1,0 +1,64 @@
+<div class="container">
+  <!-- Pestañas o Navegación -->
+  <div class="tabs">
+    <button class="tab-btn">📅 Reservar Turno (Público)</button>
+    <button class="tab-btn active">💈 Administración Barberos</button>
+  </div>
+
+  <h2>Gestión de Barberos</h2>
+
+  <!-- Formulario de Registro -->
+  <div class="card-form">
+    <h3>Registrar Nuevo Barbero</h3>
+    <form (ngSubmit)="guardar()">
+      <div class="row">
+        <input 
+          type="text" 
+          [(ngModel)]="nuevoBarbero.nombre" 
+          name="nombre" 
+          placeholder="Nombre" 
+          required 
+        />
+        <input 
+          type="text" 
+          [(ngModel)]="nuevoBarbero.apellido" 
+          name="apellido" 
+          placeholder="Apellido" 
+          required 
+        />
+      </div>
+
+      <div class="row">
+        <input 
+          type="text" 
+          [(ngModel)]="nuevoBarbero.color" 
+          name="color" 
+          placeholder="Color" 
+        />
+        <button type="submit" class="btn-primary">Guardar Barbero</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Lista desplegable y listado -->
+  <h3>Lista de Barberos Registrados</h3>
+
+  <!-- Desplegable / Select para la vista de reservas -->
+  <div class="form-group">
+    <label for="selectBarbero"><strong>Barbero:</strong></label>
+    <select id="selectBarbero" class="form-control">
+      <option value="">Seleccionar Barbero...</option>
+      <option *ngFor="let b of barberos" [value]="b.id">
+        {{ b.nombre }} {{ b.apellido }}
+      </option>
+    </select>
+  </div>
+
+  <!-- Listado visual -->
+  <ul class="lista-barberos">
+    <li *ngFor="let b of barberos" [style.borderLeftColor]="b.color || '#007bff'">
+      <span><strong>{{ b.nombre }} {{ b.apellido }}</strong></span>
+      <span *if="b.color" class="badge-color">{{ b.color }}</span>
+    </li>
+  </ul>
+</div>

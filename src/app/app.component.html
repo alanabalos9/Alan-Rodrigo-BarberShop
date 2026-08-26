@@ -1,78 +1,172 @@
-<div style="max-width: 900px; margin: 40px auto; font-family: 'Roboto', sans-serif; padding: 0 20px;">
-  
-  <header style="text-align: center; margin-bottom: 40px;">
-    <h1 style="color: #1a202c; margin-bottom: 8px;">💈 Gestión de Turnos - Barbería</h1>
-    <p style="color: #718096; margin: 0;">Consulta, registro y eliminación de turnos mediante API REST</p>
-  </header>
+<div style="max-width: 950px; margin: 30px auto; font-family: 'Segoe UI', sans-serif; padding: 0 15px;">
 
-  <!-- FORMULARIO DE ALTA -->
-  <section style="background-color: #f7fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 24px; margin-bottom: 40px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-    <h2 style="font-size: 1.25rem; color: #2d3748; margin-top: 0; margin-bottom: 16px;">Nuevo Turno</h2>
+  <!-- NAVEGACIÓN DE PESTAÑAS -->
+  <nav style="display: flex; gap: 10px; border-bottom: 2px solid #e2e8f0; margin-bottom: 25px;">
+    <button (click)="pestanaActiva = 'reserva'" 
+            [style.border-bottom]="pestanaActiva === 'reserva' ? '3px solid #3182ce' : 'none'"
+            [style.color]="pestanaActiva === 'reserva' ? '#3182ce' : '#4a5568'"
+            style="background: none; border: none; padding: 12px 20px; font-weight: bold; font-size: 1rem; cursor: pointer;">
+      📅 Reservar Turno (Público)
+    </button>
+    <button (click)="pestanaActiva = 'admin'" 
+            [style.border-bottom]="pestanaActiva === 'admin' ? '3px solid #3182ce' : 'none'"
+            [style.color]="pestanaActiva === 'admin' ? '#3182ce' : '#4a5568'"
+            style="background: none; border: none; padding: 12px 20px; font-weight: bold; font-size: 1rem; cursor: pointer;">
+      💈 Administración Barberos
+    </button>
+  </nav>
+
+  <!-- PESTAÑA 1: RESERVA LIBRE DE TURNOS -->
+  <div *ngIf="pestanaActiva === 'reserva'">
+    <section style="background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 24px; margin-bottom: 30px;">
+      <h2 style="margin-top: 0; color: #2d3748;">Reservar Turno</h2>
+      
+      <form (ngSubmit)="crearTurno()" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+        
+        <div>
+          <label style="display: block; font-size: 0.85rem; font-weight: bold; margin-bottom: 4px;">Nombre</label>
+          <input type="text" [(ngModel)]="nuevoTurno.Nombre" name="Nombre" required placeholder="Ej. Alan" style="width: 100%; padding: 8px; box-sizing: border-box;">
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 0.85rem; font-weight: bold; margin-bottom: 4px;">Apellido</label>
+          <input type="text" [(ngModel)]="nuevoTurno.Apellido" name="Apellido" required placeholder="Ej. Abalos" style="width: 100%; padding: 8px; box-sizing: border-box;">
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 0.85rem; font-weight: bold; margin-bottom: 4px;">DNI</label>
+          <input type="text" [(ngModel)]="nuevoTurno.Dni" name="Dni" required placeholder="Ej. 35123456" style="width: 100%; padding: 8px; box-sizing: border-box;">
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 0.85rem; font-weight: bold; margin-bottom: 4px;">Teléfono</label>
+          <input type="tel" [(ngModel)]="nuevoTurno.Telefono" name="Telefono" required placeholder="Ej. 1198765432" style="width: 100%; padding: 8px; box-sizing: border-box;">
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 0.85rem; font-weight: bold; margin-bottom: 4px;">Servicio / Especialidad</label>
+          <select [(ngModel)]="nuevoTurno.Servicio" (change)="onEspecialidadChange()" name="Servicio" style="width: 100%; padding: 8px; box-sizing: border-box;">
+            <option value="">Todas las especialidades</option>
+            <option *ngFor="let esp of especialidadesUnicas" [value]="esp">{{ esp }}</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 0.85rem; font-weight: bold; margin-bottom: 4px;">Barbero</label>
+          <select [(ngModel)]="nuevoTurno.Barbero" (change)="onBarberoChange()" name="Barbero" required style="width: 100%; padding: 8px; box-sizing: border-box;">
+            <option value="">Seleccionar Barbero...</option>
+            <option *ngFor="let b of barberosFiltrados" [value]="b.Nombre">{{ b.Nombre }} {{ b.Apellido || '' }}</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 0.85rem; font-weight: bold; margin-bottom: 4px;">Horario disponible</label>
+          <select [(ngModel)]="nuevoTurno.Hora" name="Hora" [disabled]="!nuevoTurno.Barbero" required style="width: 100%; padding: 8px; box-sizing: border-box;">
+            <option value="">{{ nuevoTurno.Barbero ? 'Seleccionar Hora...' : 'Elige barbero primero' }}</option>
+            <option *ngFor="let h of horariosDisponibles" [value]="h">{{ h }} hs</option>
+          </select>
+        </div>
+
+        <div style="grid-column: 1 / -1; margin-top: 10px;">
+          <button type="submit" style="background: #2b6cb0; color: white; border: none; padding: 10px 24px; border-radius: 4px; font-weight: bold; cursor: pointer;">
+            Confirmar Reserva
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <section>
+      <h3>Turnos Agendados</h3>
+      <table *ngIf="datos.length > 0" style="width: 100%; border-collapse: collapse; text-align: left;">
+        <thead>
+          <tr style="background: #edf2f7;">
+            <th style="padding: 10px;">Cliente</th>
+            <th style="padding: 10px;">DNI</th>
+            <th style="padding: 10px;">Teléfono</th>
+            <th style="padding: 10px;">Barbero</th>
+            <th style="padding: 10px;">Hora</th>
+            <th style="padding: 10px; text-align: center;">Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let t of datos" style="border-bottom: 1px solid #e2e8f0;">
+            <td style="padding: 10px;">{{ t.Nombre }} {{ t.Apellido }}</td>
+            <td style="padding: 10px;">{{ t.Dni || '-' }}</td>
+            <td style="padding: 10px;">{{ t.Telefono || '-' }}</td>
+            <td style="padding: 10px;">{{ t.Barbero }}</td>
+            <td style="padding: 10px;"><strong>{{ t.Hora || '-' }}</strong></td>
+            <td style="padding: 10px; text-align: center;">
+              <button (click)="borrarItem(t.id)" style="background: #e53e3e; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">Eliminar</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+
+  <!-- PESTAÑA 2: ADMINISTRACIÓN CON LOGIN -->
+  <div *ngIf="pestanaActiva === 'admin'">
     
-    <form (ngSubmit)="crearTurno()" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
-      <div>
-        <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #4a5568; margin-bottom: 4px;">Nombre</label>
-        <input type="text" [(ngModel)]="nuevoTurno.Nombre" name="Nombre" required placeholder="Ej. Juan" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e0; border-radius: 4px; box-sizing: border-box;">
+    <!-- FORMULARIO DE ACCESO -->
+    <div *ngIf="!adminAutenticado" style="max-width: 350px; margin: 40px auto; padding: 24px; border: 1px solid #cbd5e0; border-radius: 8px; background: white; text-align: center;">
+      <h3 style="margin-top: 0; color: #2d3748;">Acceso Administrador</h3>
+      <div style="margin-bottom: 12px; text-align: left;">
+        <label style="font-size: 0.85rem; font-weight: bold;">Usuario</label>
+        <input type="text" [(ngModel)]="credenciales.usuario" placeholder="admin" style="width: 100%; padding: 8px; box-sizing: border-box; margin-top: 4px;">
       </div>
-
-      <div>
-        <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #4a5568; margin-bottom: 4px;">Apellido</label>
-        <input type="text" [(ngModel)]="nuevoTurno.Apellido" name="Apellido" required placeholder="Ej. Pérez" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e0; border-radius: 4px; box-sizing: border-box;">
+      <div style="margin-bottom: 16px; text-align: left;">
+        <label style="font-size: 0.85rem; font-weight: bold;">Contraseña</label>
+        <input type="password" [(ngModel)]="credenciales.password" placeholder="1234" style="width: 100%; padding: 8px; box-sizing: border-box; margin-top: 4px;">
       </div>
-
-      <div>
-        <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #4a5568; margin-bottom: 4px;">Barbero</label>
-        <input type="text" [(ngModel)]="nuevoTurno.Barbero" name="Barbero" placeholder="Ej. Alan" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e0; border-radius: 4px; box-sizing: border-box;">
-      </div>
-
-      <div>
-        <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #4a5568; margin-bottom: 4px;">Servicio</label>
-        <input type="text" [(ngModel)]="nuevoTurno.Servicio" name="Servicio" placeholder="Ej. Corte y Barba" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e0; border-radius: 4px; box-sizing: border-box;">
-      </div>
-
-      <div style="grid-column: 1 / -1; margin-top: 8px;">
-        <button type="submit" style="background-color: #3182ce; color: white; padding: 10px 20px; border: none; border-radius: 4px; font-weight: 600; cursor: pointer;">
-          Guardar Turno
-        </button>
-      </div>
-    </form>
-  </section>
-
-  <!-- LISTADO DE TURNOS -->
-  <section>
-    <h2 style="font-size: 1.25rem; color: #2d3748; margin-bottom: 16px;">Listado de Turnos Registrados</h2>
-
-    <div *ngIf="datos.length === 0" style="text-align: center; color: #a0aec0; padding: 20px;">
-      Cargando turnos desde MockAPI o la lista está vacía...
+      <button (click)="iniciarSesion()" style="width: 100%; background: #3182ce; color: white; border: none; padding: 10px; border-radius: 4px; font-weight: bold; cursor: pointer;">
+        Ingresar
+      </button>
     </div>
 
-    <table *ngIf="datos.length > 0" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.95rem;">
-      <thead>
-        <tr style="background-color: #edf2f7; border-bottom: 2px solid #cbd5e0;">
-          <th style="padding: 12px;">Cliente</th>
-          <th style="padding: 12px;">Barbero</th>
-          <th style="padding: 12px;">Servicio</th>
-          <th style="padding: 12px; text-align: center;">Acción</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let item of datos" style="border-bottom: 1px solid #e2e8f0;">
-          <td style="padding: 12px;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <img *ngIf="item.FotoPerfil" [src]="item.FotoPerfil" style="width: 32px; height: 32px; border-radius: 50%;" alt="Avatar">
-              <span><strong>{{ item.Nombre }} {{ item.Apellido }}</strong></span>
-            </div>
-          </td>
-          <td style="padding: 12px;">{{ item.Barbero || '-' }}</td>
-          <td style="padding: 12px;">{{ item.Servicio || '-' }}</td>
-          <td style="padding: 12px; text-align: center;">
-            <button (click)="borrarItem(item.id)" style="background-color: #e53e3e; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">
-              Eliminar
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
+    <!-- PANEL ADMIN (DENTRO DEL LOGIN) -->
+    <div *ngIf="adminAutenticado">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="margin: 0; color: #2b6cb0;">Gestión de Barberos</h2>
+        <button (click)="cerrarSesion()" style="background: #718096; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
+          Cerrar Sesión
+        </button>
+      </div>
+
+      <section style="background: #eef6ff; border: 1px solid #bee3f8; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+        <h3 style="margin-top: 0; color: #2b6cb0;">Registrar Nuevo Barbero</h3>
+        <form (ngSubmit)="crearBarbero()" style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <input type="text" [(ngModel)]="nuevoBarbero.Nombre" name="bNombre" placeholder="Nombre" required style="padding: 8px; flex: 1;">
+          <input type="text" [(ngModel)]="nuevoBarbero.Apellido" name="bApellido" placeholder="Apellido" style="padding: 8px; flex: 1;">
+          <input type="text" [(ngModel)]="nuevoBarbero.Especialidad" name="bEspecialidad" placeholder="Especialidad (ej. Fade)" required style="padding: 8px; flex: 1;">
+          <button type="submit" style="background: #3182ce; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold;">
+            Guardar Barbero
+          </button>
+        </form>
+      </section>
+
+      <h3>Lista de Barberos Registrados</h3>
+      <table *ngIf="barberos.length > 0" style="width: 100%; border-collapse: collapse; text-align: left; background: white;">
+        <thead>
+          <tr style="background: #bee3f8;">
+            <th style="padding: 10px;">Nombre</th>
+            <th style="padding: 10px;">Apellido</th>
+            <th style="padding: 10px;">Especialidad</th>
+            <th style="padding: 10px; text-align: center;">Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let b of barberos" style="border-bottom: 1px solid #e2e8f0;">
+            <td style="padding: 10px;"><strong>{{ b.Nombre }}</strong></td>
+            <td style="padding: 10px;">{{ b.Apellido || '-' }}</td>
+            <td style="padding: 10px;">{{ b.Especialidad || '-' }}</td>
+            <td style="padding: 10px; text-align: center;">
+              <button (click)="borrarBarbero(b.id)" style="background: #e53e3e; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">Eliminar</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
 
 </div>
