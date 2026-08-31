@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Barbero, Turno } from '../models/barbero.model';
+import { Barbero, Turno } from './barbero.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class BarberoService {
-  private baseUrl = 'https://6a8da136baf2ac84246d4bb1.mockapi.io/api/v1';
+  private baseUrl = 'https://6a8da136baf2ac84246d4bb12.mockapi.io/api/v1';
 
   constructor(private http: HttpClient) {}
 
@@ -15,7 +15,6 @@ export class BarberoService {
     return this.http.get<Barbero[]>(`${this.baseUrl}/Barberos`);
   }
 
-  // Permite registrar nuevos barberos en MockAPI
   guardarBarbero(barbero: Barbero): Observable<Barbero> {
     return this.http.post<Barbero>(`${this.baseUrl}/Barberos`, barbero);
   }

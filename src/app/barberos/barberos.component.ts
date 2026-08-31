@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { BarberoService } from '../../services/barbero.service';
-import { Barbero, Turno } from '../../models/barbero.model';
+import { BarberoService } from './barbero.service';
+import { Barbero, Turno } from './barbero.model';
 
 @Component({
   selector: 'app-barberos',
@@ -17,14 +17,10 @@ export class BarberosComponent implements OnInit {
   barberosFiltrados: Barbero[] = [];
   turnosExistentes: Turno[] = [];
 
-  // Lista dinámica para capturar cualquier especialidad de los barberos
   servicios: string[] = [];
-
-  // Base fija de horarios de trabajo
   horariosJornada: string[] = ['09:00', '10:00', '11:00', '12:00', '14:00', '15:00', '16:00', '17:00', '18:00'];
   horariosDisponibles: string[] = [];
 
-  // Formulario de Reserva
   reserva: Turno = {
     Nombre: '',
     Apellido: '',
@@ -36,7 +32,6 @@ export class BarberosComponent implements OnInit {
     Hora: ''
   };
 
-  // Formulario de Administración de Barberos
   nuevoBarbero: Barbero = {
     Nombre: '',
     Apellido: '',
@@ -61,7 +56,6 @@ export class BarberosComponent implements OnInit {
 
         this.barberosFiltrados = [...this.barberos];
 
-        // Extrae dinámicamente las especialidades sin duplicados
         const especialidadesSet = new Set<string>();
         this.barberos.forEach(b => {
           if (b.Especialidad) especialidadesSet.add(b.Especialidad.trim());
@@ -79,7 +73,6 @@ export class BarberosComponent implements OnInit {
     });
   }
 
-  // Función para agregar un nuevo barbero a la API
   guardarBarbero(): void {
     if (!this.nuevoBarbero.Nombre || !this.nuevoBarbero.Apellido) {
       alert('Nombre y Apellido son requeridos.');
@@ -90,13 +83,12 @@ export class BarberosComponent implements OnInit {
       next: () => {
         alert('Barbero registrado con éxito');
         this.nuevoBarbero = { Nombre: '', Apellido: '', Especialidad: '' };
-        this.cargarDatos(); // Actualiza la lista y opciones de servicios
+        this.cargarDatos();
       },
       error: (err) => console.error('Error al guardar el barbero:', err)
     });
   }
 
-  // 1. Filtrado de barberos por servicio
   onServicioChange(servicio: string): void {
     this.reserva.Servicio = servicio;
     this.reserva.Barbero = '';
@@ -113,7 +105,6 @@ export class BarberosComponent implements OnInit {
     }
   }
 
-  // 2. Selección de barbero
   onBarberoChange(barberoId: string): void {
     this.reserva.Barbero = barberoId;
     this.reserva.Fecha = '';
@@ -121,7 +112,6 @@ export class BarberosComponent implements OnInit {
     this.horariosDisponibles = [];
   }
 
-  // 3. Selección de fecha y cálculo de horarios disponibles
   onFechaChange(fecha: string): void {
     this.reserva.Fecha = fecha;
     this.reserva.Hora = '';
@@ -139,7 +129,6 @@ export class BarberosComponent implements OnInit {
     this.horariosDisponibles = this.horariosJornada.filter(h => !horasOcupadas.includes(h));
   }
 
-  // Confirmar la reserva del turno
   confirmarReserva(): void {
     if (!this.reserva.Nombre || !this.reserva.Barbero || !this.reserva.Fecha || !this.reserva.Hora) {
       alert('Por favor complete todos los datos obligatorios.');

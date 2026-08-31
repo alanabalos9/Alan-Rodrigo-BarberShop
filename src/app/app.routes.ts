@@ -9,6 +9,10 @@ export const routes: Routes = [
     path: 'admin',
     loadChildren: () => import('./features/admin/admin.module').then(m => m.AdminModule)
   },
+  {
+    path: 'barberos',
+    loadChildren: () => import('./barberos/barberos.routes').then(m => m.BARBEROS_ROUTES)
+  },
   { path: '', redirectTo: 'reservar', pathMatch: 'full' },
   { path: '**', redirectTo: 'reservar' }
 ];
