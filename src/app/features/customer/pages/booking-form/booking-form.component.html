@@ -1,44 +1,77 @@
-<div class="container mt-5">
-  <div class="row justify-content-center">
-    <div class="col-md-6">
-      <div class="card shadow border-0">
-        <div class="card-header bg-dark text-white p-3">
-          <h4 class="mb-0"><i class="bi bi-scissors me-2"></i>Nueva Reserva</h4>
-        </div>
-        <div class="card-body p-4">
-          <form [formGroup]="bookingForm" (ngSubmit)="onSubmit()">
-            
-            <mat-form-field appearance="outline" class="w-100 mb-3">
-              <mat-label>Nombre del Cliente</mat-label>
-              <input matInput formControlName="cliente" placeholder="Ej: Alan Rodrigo">
-            </mat-form-field>
+<div class="booking-container">
+  <h2>Solicitar Turno</h2>
 
-            <mat-form-field appearance="outline" class="w-100 mb-3">
-              <mat-label>Seleccionar Barbero</mat-label>
-              <mat-select formControlName="barbero">
-                <mat-option value="alan">Alan (Clásicos)</mat-option>
-                <mat-option value="rodrigo">Rodrigo (Modernos)</mat-option>
-              </mat-select>
-            </mat-form-field>
+  <div *ngIf="turnoConfirmado" class="mensaje exito">
+    ¡Turno confirmado con éxito! Te esperamos.
+    <button mat-stroked-button (click)="turnoConfirmado = false">Solicitar otro turno</button>
+  </div>
 
-            <mat-form-field appearance="outline" class="w-100 mb-4">
-              <mat-label>Servicio</mat-label>
-              <mat-select formControlName="servicio">
-                <mat-option value="corte">Corte</mat-option>
-                <mat-option value="barba">Barba</mat-option>
-                <mat-option value="completo">Corte + Barba</mat-option>
-              </mat-select>
-            </mat-form-field>
+  <div *ngIf="errorMensaje" class="mensaje error">{{ errorMensaje }}</div>
 
-            <div class="d-grid">
-              <button mat-raised-button color="primary" type="submit" [disabled]="bookingForm.invalid">
-                Confirmar Turno
-              </button>
-            </div>
+  <form [formGroup]="bookingForm" (ngSubmit)="onSubmit()" *ngIf="!turnoConfirmado">
 
-          </form>
-        </div>
+    <mat-form-field appearance="outline" class="campo">
+      <mat-label>Nombre</mat-label>
+      <input matInput formControlName="Nombre">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="campo">
+      <mat-label>Apellido</mat-label>
+      <input matInput formControlName="Apellido">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="campo">
+      <mat-label>DNI</mat-label>
+      <input matInput formControlName="DNI">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="campo">
+      <mat-label>Teléfono</mat-label>
+      <input matInput formControlName="Telefono">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="campo">
+      <mat-label>Estilo / Servicio</mat-label>
+      <mat-select formControlName="Servicio">
+        <mat-option *ngFor="let s of servicios" [value]="s">{{ s }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="campo">
+      <mat-label>Barbero</mat-label>
+      <mat-select formControlName="Barbero">
+        <mat-option *ngFor="let b of barberos" [value]="b.id">
+          {{ b.Nombre }} {{ b.Apellido }}<span *ngIf="b.Especialidad"> ({{ b.Especialidad }})</span>
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="campo">
+      <mat-label>Fecha</mat-label>
+      <input matInput type="date" formControlName="Fecha" [min]="minFecha">
+    </mat-form-field>
+
+    <div class="campo" *ngIf="bookingForm.get('Barbero')?.value && bookingForm.get('Fecha')?.value">
+      <label class="label-horarios">Horario disponible</label>
+
+      <div *ngIf="cargandoHorarios">Buscando horarios...</div>
+
+      <div *ngIf="!cargandoHorarios && horariosDisponibles.length === 0" class="mensaje aviso">
+        No hay horarios disponibles para ese barbero en esa fecha.
+      </div>
+
+      <div class="horarios" *ngIf="!cargandoHorarios && horariosDisponibles.length > 0">
+        <button type="button" mat-stroked-button
+                *ngFor="let h of horariosDisponibles"
+                [class.seleccionado]="bookingForm.get('Hora')?.value === h"
+                (click)="bookingForm.get('Hora')?.setValue(h)">
+          {{ h }}
+        </button>
       </div>
     </div>
-  </div>
+
+    <button mat-raised-button color="primary" type="submit" class="btn-confirmar" [disabled]="bookingForm.invalid">
+      Confirmar Turno
+    </button>
+  </form>
 </div>

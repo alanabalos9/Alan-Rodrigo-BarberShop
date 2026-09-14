@@ -1,129 +1,48 @@
-<!-- Navegación por pestañas -->
-<div class="tabs">
-  <button 
-    [class.active]="pestanaActiva === 'reserva'" 
-    (click)="pestanaActiva = 'reserva'">
-    📅 Reservar Turno (Público)
-  </button>
-  <button 
-    [class.active]="pestanaActiva === 'admin'" 
-    (click)="pestanaActiva = 'admin'">
-    💈 Administración Barberos
-  </button>
-</div>
-
-<!-- Vista 1: Formulario de Reserva -->
-<div *ngIf="pestanaActiva === 'reserva'" class="card-form">
-  <h2>Reservar Turno</h2>
-  <form (ngSubmit)="confirmarReserva()">
-    
-    <!-- Datos del Cliente -->
-    <div class="row">
-      <div class="form-group">
-        <label>Nombre</label>
-        <input type="text" [(ngModel)]="reserva.Nombre" name="Nombre" placeholder="Ej. Alan" required />
-      </div>
-      <div class="form-group">
-        <label>Apellido</label>
-        <input type="text" [(ngModel)]="reserva.Apellido" name="Apellido" placeholder="Ej. Abalos" required />
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="form-group">
-        <label>DNI</label>
-        <input type="text" [(ngModel)]="reserva.DNI" name="DNI" placeholder="Ej. 35123456" />
-      </div>
-      <div class="form-group">
-        <label>Teléfono</label>
-        <input type="text" [(ngModel)]="reserva.Telefono" name="Telefono" placeholder="Ej. 1198765432" />
-      </div>
-    </div>
-
-    <!-- Selección Reactiva -->
-    <div class="row">
-      <!-- 1. Servicio -->
-      <div class="form-group">
-        <label>Servicio / Especialidad</label>
-        <select [ngModel]="reserva.Servicio" (ngModelChange)="onServicioChange($event)" name="Servicio" required>
-          <option value="">Todas las especialidades</option>
-          <option *ngFor="let s of servicios" [value]="s">{{ s }}</option>
-        </select>
-      </div>
-
-      <!-- 2. Barbero -->
-      <div class="form-group">
-        <label>Barbero</label>
-        <select [ngModel]="reserva.Barbero" (ngModelChange)="onBarberoChange($event)" name="Barbero" required>
-          <option value="">Seleccionar Barbero...</option>
-          <option *ngFor="let b of barberosFiltrados" [value]="b.id">
-            {{ b.Nombre }} {{ b.Apellido }}
-          </option>
-        </select>
-      </div>
-    </div>
-
-    <div class="row">
-      <!-- 3. Fecha -->
-      <div class="form-group">
-        <label>Fecha del Turno</label>
-        <input 
-          type="date" 
-          [ngModel]="reserva.Fecha" 
-          (ngModelChange)="onFechaChange($event)" 
-          name="Fecha" 
-          required 
-          [disabled]="!reserva.Barbero" 
-        />
-      </div>
-
-      <!-- 4. Horario Disponible -->
-      <div class="form-group">
-        <label>Horario Disponible</label>
-        <select [(ngModel)]="reserva.Hora" name="Hora" required [disabled]="!reserva.Fecha">
-          <option value="" *ngIf="!reserva.Fecha">Elige barbero y fecha primero</option>
-          <option value="" *ngIf="reserva.Fecha && horariosDisponibles.length === 0">Sin horarios libres para este día</option>
-          <option *ngFor="let h of horariosDisponibles" [value]="h">{{ h }}</option>
-        </select>
-      </div>
-    </div>
-
-    <button type="submit" class="btn-primary" [disabled]="!reserva.Hora">Confirmar Reserva</button>
-  </form>
-</div>
-
-<!-- Vista 2: Administración de Barberos -->
-<div *ngIf="pestanaActiva === 'admin'" class="card-form">
+<div class="admin-container">
   <h2>Gestión de Barberos</h2>
-  
-  <div class="admin-box">
-    <h3>Registrar Nuevo Barbero</h3>
-    <form (ngSubmit)="guardarBarbero()">
-      <div class="row">
-        <div class="form-group">
-          <input type="text" [(ngModel)]="nuevoBarbero.Nombre" name="nuevoNombre" placeholder="Nombre" required />
-        </div>
-        <div class="form-group">
-          <input type="text" [(ngModel)]="nuevoBarbero.Apellido" name="nuevoApellido" placeholder="Apellido" required />
-        </div>
-      </div>
-      <div class="row">
-        <div class="form-group">
-          <input type="text" [(ngModel)]="nuevoBarbero.Especialidad" name="nuevaEspecialidad" placeholder="Especialidad (ej. Fade, Barba)" />
-        </div>
-        <div class="form-group">
-          <button type="submit" class="btn-primary">Guardar Barbero</button>
-        </div>
-      </div>
-    </form>
-  </div>
 
-  <div class="admin-list">
-    <h3>Lista de Barberos Registrados</h3>
-    <ul>
-      <li *ngFor="let b of barberos">
-        <strong>{{ b.Nombre }} {{ b.Apellido }}</strong> — <span>{{ b.Especialidad || 'Sin especialidad' }}</span>
-      </li>
-    </ul>
-  </div>
+  <div *ngIf="errorMensaje" class="mensaje error">{{ errorMensaje }}</div>
+
+  <form [formGroup]="form" (ngSubmit)="agregarBarbero()" class="form-barbero">
+    <mat-form-field appearance="outline">
+      <mat-label>Nombre</mat-label>
+      <input matInput formControlName="Nombre">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Apellido</mat-label>
+      <input matInput formControlName="Apellido">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Especialidad</mat-label>
+      <input matInput formControlName="Especialidad">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>URL de foto</mat-label>
+      <input matInput formControlName="FotoPerfil">
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" type="submit" [disabled]="guardando">
+      {{ guardando ? 'Guardando...' : 'Agregar Barbero' }}
+    </button>
+  </form>
+
+  <table class="tabla-barberos">
+    <thead>
+      <tr><th>Foto</th><th>Nombre</th><th>Apellido</th><th>Especialidad</th><th></th></tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let b of barberos">
+        <td><img *ngIf="b.FotoPerfil" [src]="b.FotoPerfil" alt="" class="foto-mini"></td>
+        <td>{{ b.Nombre }}</td>
+        <td>{{ b.Apellido }}</td>
+        <td>{{ b.Especialidad }}</td>
+        <td><button mat-stroked-button color="warn" (click)="eliminarBarbero(b.id)">Eliminar</button></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p *ngIf="barberos.length === 0">No hay barberos cargados todavía.</p>
 </div>

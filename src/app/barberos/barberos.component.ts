@@ -1,148 +1,56 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { BarberoService } from './barbero.service';
-import { Barbero, Turno } from './barbero.model';
-
+import { ReactiveFormsModule, FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+   import { ApiService, Barbero } from '../features/services/api.service';
 @Component({
-  selector: 'app-barberos',
+  selector: 'app-barberos-admin',
   standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl: './barberos.component.html'
+  imports: [CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatButtonModule],
+  templateUrl: './barberos.component.html',
+  styleUrls: ['./barberos.component.scss']
 })
 export class BarberosComponent implements OnInit {
-  pestanaActiva: 'reserva' | 'admin' = 'reserva';
-
   barberos: Barbero[] = [];
-  barberosFiltrados: Barbero[] = [];
-  turnosExistentes: Turno[] = [];
+  form: FormGroup;
+  guardando = false;
+  errorMensaje = '';
 
-  servicios: string[] = [];
-  horariosJornada: string[] = ['09:00', '10:00', '11:00', '12:00', '14:00', '15:00', '16:00', '17:00', '18:00'];
-  horariosDisponibles: string[] = [];
-
-  reserva: Turno = {
-    Nombre: '',
-    Apellido: '',
-    DNI: '',
-    Telefono: '',
-    Servicio: '',
-    Barbero: '',
-    Fecha: '',
-    Hora: ''
-  };
-
-  nuevoBarbero: Barbero = {
-    Nombre: '',
-    Apellido: '',
-    Especialidad: ''
-  };
-
-  constructor(private barberoService: BarberoService) {}
-
-  ngOnInit(): void {
-    this.cargarDatos();
-  }
-
-  cargarDatos(): void {
-    this.barberoService.getBarberos().subscribe({
-      next: (data) => {
-        this.barberos = (data || []).map((b: any) => ({
-          id: b.id,
-          Nombre: b.Nombre || b.nombre || '',
-          Apellido: b.Apellido || b.apellido || '',
-          Especialidad: b.Especialidad || b.especialidad || ''
-        }));
-
-        this.barberosFiltrados = [...this.barberos];
-
-        const especialidadesSet = new Set<string>();
-        this.barberos.forEach(b => {
-          if (b.Especialidad) especialidadesSet.add(b.Especialidad.trim());
-        });
-        this.servicios = Array.from(especialidadesSet);
-      },
-      error: (err) => console.error('Error al cargar barberos:', err)
-    });
-
-    this.barberoService.getTurnos().subscribe({
-      next: (turnos) => {
-        this.turnosExistentes = turnos || [];
-      },
-      error: (err) => console.error('Error al cargar turnos:', err)
+  constructor(private fb: FormBuilder, private apiService: ApiService) {
+    this.form = this.fb.group({
+      Nombre: ['', Validators.required],
+      Apellido: ['', Validators.required],
+      Especialidad: [''],
+      FotoPerfil: ['']
     });
   }
 
-  guardarBarbero(): void {
-    if (!this.nuevoBarbero.Nombre || !this.nuevoBarbero.Apellido) {
-      alert('Nombre y Apellido son requeridos.');
-      return;
-    }
+  ngOnInit(): void { this.cargarBarberos(); }
 
-    this.barberoService.guardarBarbero(this.nuevoBarbero).subscribe({
-      next: () => {
-        alert('Barbero registrado con éxito');
-        this.nuevoBarbero = { Nombre: '', Apellido: '', Especialidad: '' };
-        this.cargarDatos();
-      },
-      error: (err) => console.error('Error al guardar el barbero:', err)
+  cargarBarberos(): void {
+  this.apiService.getBarberos().subscribe({
+    next: (data: Barbero[]) => this.barberos = data,
+    error: () => this.errorMensaje = 'No se pudieron cargar los barberos.'
+  });
+}
+
+  agregarBarbero(): void {
+    if (this.form.invalid) { this.form.markAllAsTouched(); return; }
+
+    this.guardando = true;
+    this.apiService.crearBarbero(this.form.value).subscribe({
+      next: () => { this.form.reset(); this.guardando = false; this.cargarBarberos(); },
+      error: () => { this.errorMensaje = 'No se pudo guardar el barbero.'; this.guardando = false; }
     });
   }
 
-  onServicioChange(servicio: string): void {
-    this.reserva.Servicio = servicio;
-    this.reserva.Barbero = '';
-    this.reserva.Fecha = '';
-    this.reserva.Hora = '';
-    this.horariosDisponibles = [];
-
-    if (!servicio || servicio.trim() === '') {
-      this.barberosFiltrados = [...this.barberos];
-    } else {
-      this.barberosFiltrados = this.barberos.filter(b => 
-        b.Especialidad && b.Especialidad.trim().toLowerCase() === servicio.trim().toLowerCase()
-      );
-    }
-  }
-
-  onBarberoChange(barberoId: string): void {
-    this.reserva.Barbero = barberoId;
-    this.reserva.Fecha = '';
-    this.reserva.Hora = '';
-    this.horariosDisponibles = [];
-  }
-
-  onFechaChange(fecha: string): void {
-    this.reserva.Fecha = fecha;
-    this.reserva.Hora = '';
-
-    if (!fecha || !this.reserva.Barbero) {
-      this.horariosDisponibles = [];
-      return;
-    }
-
-    const turnosOcupados = this.turnosExistentes.filter(t => 
-      String(t.Barbero) === String(this.reserva.Barbero) && t.Fecha === fecha
-    );
-
-    const horasOcupadas = turnosOcupados.map(t => t.Hora);
-    this.horariosDisponibles = this.horariosJornada.filter(h => !horasOcupadas.includes(h));
-  }
-
-  confirmarReserva(): void {
-    if (!this.reserva.Nombre || !this.reserva.Barbero || !this.reserva.Fecha || !this.reserva.Hora) {
-      alert('Por favor complete todos los datos obligatorios.');
-      return;
-    }
-
-    this.barberoService.guardarTurno(this.reserva).subscribe({
-      next: (turnoCreado) => {
-        alert(`¡Turno reservado con éxito para las ${turnoCreado.Hora}!`);
-        this.reserva = { Nombre: '', Apellido: '', DNI: '', Telefono: '', Servicio: '', Barbero: '', Fecha: '', Hora: '' };
-        this.horariosDisponibles = [];
-        this.cargarDatos();
-      },
-      error: (err) => console.error('Error al reservar el turno:', err)
+  eliminarBarbero(id?: string): void {
+    if (!id || !confirm('¿Eliminar este barbero?')) return;
+    this.apiService.eliminarBarbero(id).subscribe({
+      next: () => this.cargarBarberos(),
+      error: () => this.errorMensaje = 'No se pudo eliminar el barbero.'
     });
   }
 }

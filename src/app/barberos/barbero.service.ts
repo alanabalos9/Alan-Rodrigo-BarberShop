@@ -7,7 +7,7 @@ import { Barbero, Turno } from './barbero.model';
   providedIn: 'root'
 })
 export class BarberoService {
-  private baseUrl = 'https://6a8da136baf2ac84246d4bb12.mockapi.io/api/v1';
+  private baseUrl = 'https://6a8da136baf2ac84246d4bb1.mockapi.io/api/v1';
 
   constructor(private http: HttpClient) {}
 

@@ -6,19 +6,18 @@ export interface Turno {
   id?: string;
   Nombre: string;
   Apellido: string;
-  Dni?: string;
-  Telefono?: string;
-  FotoPerfil?: string;
-  Barbero?: string;
-  Servicio?: string;
-  Fecha?: string;
-  Hora?: string;
+  DNI: string;
+  Telefono: string;
+  Barbero: string;   // id del barbero
+  Servicio: string;  // estilo/servicio elegido
+  Fecha: string;     // YYYY-MM-DD
+  Hora: string;       // HH:mm
 }
 
 export interface Barbero {
   id?: string;
   Nombre: string;
-  Apellido?: string;
+  Apellido: string;
   FotoPerfil?: string;
   Especialidad?: string;
 }
@@ -31,27 +30,29 @@ export class ApiService {
 
   constructor(private http: HttpClient) {}
 
-  getDatos(): Observable<Turno[]> {
-    return this.http.get<Turno[]>(`${this.baseUrl}/turnos`);
+  // ---- Turnos ----
+  getTurnos(): Observable<Turno[]> {
+    return this.http.get<Turno[]>(`${this.baseUrl}/Turnos`);
   }
 
-  crearDato(nuevoDato: Turno): Observable<Turno> {
-    return this.http.post<Turno>(`${this.baseUrl}/turnos`, nuevoDato);
+  crearTurno(nuevoTurno: Turno): Observable<Turno> {
+    return this.http.post<Turno>(`${this.baseUrl}/Turnos`, nuevoTurno);
   }
 
-  eliminarDato(id: string): Observable<any> {
-    return this.http.delete<any>(`${this.baseUrl}/turnos/${id}`);
+  eliminarTurno(id: string): Observable<any> {
+    return this.http.delete<any>(`${this.baseUrl}/Turnos/${id}`);
   }
 
+  // ---- Barberos ----
   getBarberos(): Observable<Barbero[]> {
-    return this.http.get<Barbero[]>(`${this.baseUrl}/barberos`);
+    return this.http.get<Barbero[]>(`${this.baseUrl}/Barberos`);
   }
 
   crearBarbero(nuevoBarbero: Barbero): Observable<Barbero> {
-    return this.http.post<Barbero>(`${this.baseUrl}/barberos`, nuevoBarbero);
+    return this.http.post<Barbero>(`${this.baseUrl}/Barberos`, nuevoBarbero);
   }
 
   eliminarBarbero(id: string): Observable<any> {
-    return this.http.delete<any>(`${this.baseUrl}/barberos/${id}`);
+    return this.http.delete<any>(`${this.baseUrl}/Barberos/${id}`);
   }
 }

@@ -1,0 +1,23 @@
+<div class="admin-container">
+  <h2>Turnos Solicitados</h2>
+
+  <div *ngIf="errorMensaje" class="mensaje error">{{ errorMensaje }}</div>
+
+  <table class="tabla-turnos">
+    <thead>
+      <tr><th>Cliente</th><th>Barbero</th><th>Estilo</th><th>Fecha</th><th>Hora</th><th></th></tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let t of turnos">
+        <td>{{ t.Nombre }} {{ t.Apellido }}</td>
+        <td>{{ nombreBarbero(t.Barbero) }}</td>
+        <td>{{ t.Servicio }}</td>
+        <td>{{ t.Fecha }}</td>
+        <td>{{ t.Hora }}</td>
+        <td><button mat-stroked-button color="warn" (click)="cancelarTurno(t.id)">Cancelar</button></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p *ngIf="turnos.length === 0">No hay turnos cargados todavía.</p>
+</div>
