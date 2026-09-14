@@ -25,14 +25,15 @@ export class AppComponent implements OnInit {
   horariosDisponibles: string[] = [];
 
   nuevoTurno: Turno = {
-    Nombre: '',
-    Apellido: '',
-    Dni: '',
-    Telefono: '',
-    Barbero: '',
-    Servicio: '',
-    Hora: ''
-  };
+  Nombre: '',
+  Apellido: '',
+  DNI: '',
+  Telefono: '',
+  Barbero: '',
+  Servicio: '',
+  Fecha: '',
+  Hora: ''
+};
 
   nuevoBarbero: Barbero = {
     Nombre: '',
@@ -48,7 +49,7 @@ export class AppComponent implements OnInit {
   }
 
   obtenerDatos(): void {
-    this.apiService.getDatos().subscribe({
+    this.apiService.getTurnos().subscribe({
       next: (res: Turno[]) => {
         this.datos = res;
         this.actualizarHorariosDisponibles();
@@ -115,16 +116,16 @@ export class AppComponent implements OnInit {
   }
 
   crearTurno(): void {
-    if (!this.nuevoTurno.Nombre || !this.nuevoTurno.Apellido || !this.nuevoTurno.Dni || !this.nuevoTurno.Telefono || !this.nuevoTurno.Barbero || !this.nuevoTurno.Hora) {
+    if (!this.nuevoTurno.Nombre || !this.nuevoTurno.Apellido || !this.nuevoTurno.DNI || !this.nuevoTurno.Telefono || !this.nuevoTurno.Barbero || !this.nuevoTurno.Hora) {
       alert('⚠️ Por favor completa todos los campos obligatorios del turno.');
       return;
     }
 
-    this.apiService.crearDato(this.nuevoTurno).subscribe({
+    this.apiService.crearTurno(this.nuevoTurno).subscribe({
       next: () => {
         alert('✅ ¡Turno registrado con éxito!');
         this.obtenerDatos();
-        this.nuevoTurno = { Nombre: '', Apellido: '', Dni: '', Telefono: '', Barbero: '', Servicio: '', Hora: '' };
+        this.nuevoTurno = { Nombre: '', Apellido: '', DNI: '', Telefono: '', Barbero: '', Servicio: '', Fecha: '', Hora: '' };
         this.barberosFiltrados = this.barberos;
         this.horariosDisponibles = [];
       },
@@ -149,7 +150,7 @@ export class AppComponent implements OnInit {
 
   borrarItem(id?: string): void {
     if (id && confirm('¿Eliminar turno?')) {
-      this.apiService.eliminarDato(id).subscribe({ next: () => this.obtenerDatos() });
+      this.apiService.eliminarTurno(id).subscribe({ next: () => this.obtenerDatos() });
     }
   }
 

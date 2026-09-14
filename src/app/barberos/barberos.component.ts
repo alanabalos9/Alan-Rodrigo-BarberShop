@@ -4,7 +4,7 @@ import { ReactiveFormsModule, FormGroup, FormBuilder, Validators } from '@angula
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-   import { ApiService, Barbero } from '../features/services/api.service';
+import { ApiService, Barbero } from '../services/api.service';
 @Component({
   selector: 'app-barberos-admin',
   standalone: true,

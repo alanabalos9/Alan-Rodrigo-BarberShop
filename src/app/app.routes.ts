@@ -13,6 +13,10 @@ export const routes: Routes = [
     path: 'barberos',
     loadChildren: () => import('./barberos/barberos.routes').then(m => m.BARBEROS_ROUTES)
   },
+  {
+    path: 'turnos',
+    loadChildren: () => import('./turnos/turnos.routes').then(m => m.TURNOS_ROUTES)
+  },
   { path: '', redirectTo: 'reservar', pathMatch: 'full' },
   { path: '**', redirectTo: 'reservar' }
 ];
