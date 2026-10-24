@@ -1,5 +1,10 @@
 <div style="max-width: 950px; margin: 30px auto; font-family: 'Segoe UI', sans-serif; padding: 0 15px;">
 
+  <!-- BANNER DE LA API EXTERNA (CLIMA) -->
+  <div *ngIf="currentTemp !== null" style="background: #e6fffa; border: 1px solid #b2f5ea; color: #234e52; padding: 10px 15px; border-radius: 6px; margin-bottom: 20px; text-align: center; font-size: 0.95rem; font-weight: 500;">
+    <span>🌡️ Clima actual en Avellaneda: <strong>{{ currentTemp }} °C</strong> — ¡API externa conectada con éxito para tu estilo de hoy!</span>
+  </div>
+
   <!-- NAVEGACIÓN DE PESTAÑAS -->
   <nav style="display: flex; gap: 10px; border-bottom: 2px solid #e2e8f0; margin-bottom: 25px;">
     <button (click)="pestanaActiva = 'reserva'" 
@@ -21,7 +26,7 @@
     <section style="background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 24px; margin-bottom: 30px;">
       <h2 style="margin-top: 0; color: #2d3748;">Reservar Turno</h2>
       
-      <form (ngSubmit)="crearTurno()" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+      <form (ngSubmit)="crearTurno()" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px;">
         
         <div>
           <label style="display: block; font-size: 0.85rem; font-weight: bold; margin-bottom: 4px;">Nombre</label>
@@ -43,11 +48,11 @@
           <input type="tel" [(ngModel)]="nuevoTurno.Telefono" name="Telefono" required placeholder="Ej. 1198765432" style="width: 100%; padding: 8px; box-sizing: border-box;">
         </div>
 
-        <div>
-          <label style="display: block; font-size: 0.85rem; font-weight: bold; margin-bottom: 4px;">Servicio / Especialidad</label>
-          <select [(ngModel)]="nuevoTurno.Servicio" (change)="onEspecialidadChange()" name="Servicio" style="width: 100%; padding: 8px; box-sizing: border-box;">
-            <option value="">Todas las especialidades</option>
-            <option *ngFor="let esp of especialidadesUnicas" [value]="esp">{{ esp }}</option>
+        <div style="grid-column: span 2;">
+          <label style="display: block; font-size: 0.85rem; font-weight: bold; margin-bottom: 4px;">Servicio / Corte</label>
+          <select [(ngModel)]="nuevoTurno.Servicio" (change)="onEspecialidadChange()" name="Servicio" required style="width: 100%; padding: 8px; box-sizing: border-box;">
+            <option value="">Seleccionar Servicio o Corte...</option>
+            <option *ngFor="let s of listaServicios" [value]="s">{{ s }}</option>
           </select>
         </div>
 
@@ -81,8 +86,7 @@
         <thead>
           <tr style="background: #edf2f7;">
             <th style="padding: 10px;">Cliente</th>
-            <th style="padding: 10px;">DNI</th>
-            <th style="padding: 10px;">Teléfono</th>
+            <th style="padding: 10px;">Servicio / Corte</th>
             <th style="padding: 10px;">Barbero</th>
             <th style="padding: 10px;">Hora</th>
             <th style="padding: 10px; text-align: center;">Acción</th>
@@ -90,9 +94,9 @@
         </thead>
         <tbody>
           <tr *ngFor="let t of datos" style="border-bottom: 1px solid #e2e8f0;">
-            <td style="padding: 10px;">{{ t.Nombre }} {{ t.Apellido }}</td>
-            <td style="padding: 10px;">{{ t.DNI || '-' }}</td>
-            <td style="padding: 10px;">{{ t.Telefono || '-' }}</td>
+            <td style="padding: 10px;">{{ t.Nombre }} {{ t.Apellido }}<br><small style="color: #718096;">DNI: {{ t.DNI || '-' }} | Tel: {{ t.Telefono || '-' }}</small></td>
+            <!-- Muestra el nombre limpio guardado en la API -->
+            <td style="padding: 10px; font-size: 0.85rem;"><strong>{{ limpiarNombreServicio(t.Servicio) }}</strong></td>
             <td style="padding: 10px;">{{ t.Barbero }}</td>
             <td style="padding: 10px;"><strong>{{ t.Hora || '-' }}</strong></td>
             <td style="padding: 10px; text-align: center;">
@@ -137,7 +141,7 @@
         <form (ngSubmit)="crearBarbero()" style="display: flex; gap: 10px; flex-wrap: wrap;">
           <input type="text" [(ngModel)]="nuevoBarbero.Nombre" name="bNombre" placeholder="Nombre" required style="padding: 8px; flex: 1;">
           <input type="text" [(ngModel)]="nuevoBarbero.Apellido" name="bApellido" placeholder="Apellido" style="padding: 8px; flex: 1;">
-          <input type="text" [(ngModel)]="nuevoBarbero.Especialidad" name="bEspecialidad" placeholder="Especialidad (ej. Fade)" required style="padding: 8px; flex: 1;">
+          <input type="text" [(ngModel)]="nuevoBarbero.Especialidad" name="bEspecialidad" placeholder="Especialidad (ej. Fade / Estilista)" required style="padding: 8px; flex: 1;">
           <button type="submit" style="background: #3182ce; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold;">
             Guardar Barbero
           </button>

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService, Turno, Barbero } from './services/api.service';
+import { WeatherService } from './services/weather.service';
 
 @Component({
   selector: 'app-root',
@@ -19,21 +20,38 @@ export class AppComponent implements OnInit {
   datos: Turno[] = [];
   barberos: Barbero[] = [];
   barberosFiltrados: Barbero[] = [];
-  especialidadesUnicas: string[] = [];
+
+  // Lista de servicios reales de barbería
+  listaServicios: string[] = [
+    'Alisado Pelo Corto — $47.000 (60 min)',
+    'Corte Niños (hasta 10 años) — $15.000 (30 min)',
+    'Corte Pelo — $15.500 (30 min)',
+    'Corte Pelo + Lavado de Cabello — $25.500 (45 min)',
+    'Corte Pelo + Alisado — $62.500 (90 min)',
+    'Corte Pelo + Barba — $18.500 (45 min)',
+    'Corte Pelo + Barba + Alisado — $55.500 (105 min)',
+    'Corte Premium Pelo + Barba (Tratamiento Vaporizado) — $21.500 (60 min)',
+    'Corte Solo Barba (no pelo) — $13.000 (15 min)',
+    'Corte Solo Barba Vaporizado (no pelo) — $17.000 (30 min)',
+    'Lavado de Cabello — $10.000 (15 min)',
+    'Promo 1 - Corte + Perfilado Cejas — $17.000 (30 min)'
+  ];
 
   horariosBase: string[] = ['09:00', '10:00', '11:00', '12:00', '14:00', '15:00', '16:00', '17:00', '18:00'];
   horariosDisponibles: string[] = [];
 
+  currentTemp: number | null = null;
+
   nuevoTurno: Turno = {
-  Nombre: '',
-  Apellido: '',
-  DNI: '',
-  Telefono: '',
-  Barbero: '',
-  Servicio: '',
-  Fecha: '',
-  Hora: ''
-};
+    Nombre: '',
+    Apellido: '',
+    DNI: '',
+    Telefono: '',
+    Barbero: '',
+    Servicio: '',
+    Fecha: '',
+    Hora: ''
+  };
 
   nuevoBarbero: Barbero = {
     Nombre: '',
@@ -41,11 +59,26 @@ export class AppComponent implements OnInit {
     Especialidad: ''
   };
 
-  constructor(private apiService: ApiService) {}
+  constructor(
+    private apiService: ApiService,
+    private weatherService: WeatherService
+  ) {}
 
   ngOnInit(): void {
     this.obtenerDatos();
     this.obtenerBarberos();
+    this.obtenerClimaExterno();
+  }
+
+  obtenerClimaExterno(): void {
+    this.weatherService.getCurrentWeather().subscribe({
+      next: (data) => {
+        if (data && data.current_weather) {
+          this.currentTemp = data.current_weather.temperature;
+        }
+      },
+      error: (err) => console.error('Error al obtener el clima externo:', err)
+    });
   }
 
   obtenerDatos(): void {
@@ -63,11 +96,38 @@ export class AppComponent implements OnInit {
       next: (res: Barbero[]) => {
         this.barberos = res;
         this.barberosFiltrados = res;
-        const espSet = new Set(res.map(b => b.Especialidad).filter(Boolean) as string[]);
-        this.especialidadesUnicas = Array.from(espSet);
       },
       error: (err: any) => console.error('Error barberos:', err)
     });
+  }
+
+  // Traduce "Servicio 1", etc., y limpia precios o minutos de los textos
+  limpiarNombreServicio(servicioGuardado: string): string {
+    if (!servicioGuardado) return '-';
+
+    const mapaAntiguo: { [key: string]: string } = {
+      'servicio 1': 'Alisado Pelo Corto',
+      'servicio 2': 'Corte Niños (hasta 10 años)',
+      'servicio 3': 'Corte Pelo',
+      'servicio 4': 'Corte Pelo + Lavado de Cabello',
+      'servicio 5': 'Corte Pelo + Alisado',
+      'servicio 6': 'Corte Pelo + Barba',
+      'servicio 7': 'Corte Pelo + Barba + Alisado',
+      'servicio 8': 'Corte Premium Pelo + Barba (Tratamiento Vaporizado)',
+      'servicio 9': 'Corte Solo Barba (no pelo)',
+      'servicio 10': 'Corte Solo Barba Vaporizado (no pelo)',
+      'servicio 11': 'Lavado de Cabello',
+      'servicio 12': 'Promo 1 - Corte + Perfilado Cejas'
+    };
+
+    const clave = servicioGuardado.trim().toLowerCase();
+    if (mapaAntiguo[clave]) {
+      return mapaAntiguo[clave];
+    }
+
+    // Si viene con precio, lo corta en el guion largo
+    const partes = servicioGuardado.split('—');
+    return partes[0].trim();
   }
 
   iniciarSesion(): void {
@@ -84,22 +144,11 @@ export class AppComponent implements OnInit {
   }
 
   onEspecialidadChange(): void {
-    if (this.nuevoTurno.Servicio) {
-      this.barberosFiltrados = this.barberos.filter(b => b.Especialidad === this.nuevoTurno.Servicio);
-      const coincide = this.barberosFiltrados.some(b => b.Nombre === this.nuevoTurno.Barbero);
-      if (!coincide) this.nuevoTurno.Barbero = '';
-    } else {
-      this.barberosFiltrados = this.barberos;
-    }
+    this.barberosFiltrados = this.barberos;
     this.actualizarHorariosDisponibles();
   }
 
   onBarberoChange(): void {
-    const seleccionado = this.barberos.find(b => b.Nombre === this.nuevoTurno.Barbero);
-    if (seleccionado && seleccionado.Especialidad) {
-      this.nuevoTurno.Servicio = seleccionado.Especialidad;
-      this.barberosFiltrados = this.barberos.filter(b => b.Especialidad === seleccionado.Especialidad);
-    }
     this.actualizarHorariosDisponibles();
   }
 
@@ -116,12 +165,18 @@ export class AppComponent implements OnInit {
   }
 
   crearTurno(): void {
-    if (!this.nuevoTurno.Nombre || !this.nuevoTurno.Apellido || !this.nuevoTurno.DNI || !this.nuevoTurno.Telefono || !this.nuevoTurno.Barbero || !this.nuevoTurno.Hora) {
+    if (!this.nuevoTurno.Nombre || !this.nuevoTurno.Apellido || !this.nuevoTurno.DNI || !this.nuevoTurno.Telefono || !this.nuevoTurno.Servicio || !this.nuevoTurno.Barbero || !this.nuevoTurno.Hora) {
       alert('⚠️ Por favor completa todos los campos obligatorios del turno.');
       return;
     }
 
-    this.apiService.crearTurno(this.nuevoTurno).subscribe({
+    // Guardamos limpiando el precio y los minutos
+    const turnoParaGuardar = {
+      ...this.nuevoTurno,
+      Servicio: this.limpiarNombreServicio(this.nuevoTurno.Servicio)
+    };
+
+    this.apiService.crearTurno(turnoParaGuardar).subscribe({
       next: () => {
         alert('✅ ¡Turno registrado con éxito!');
         this.obtenerDatos();
