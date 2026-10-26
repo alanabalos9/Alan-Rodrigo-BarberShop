@@ -34,7 +34,7 @@ export class TurnosComponent implements OnInit {
   errorMensaje: string = '';
   currentTemp: number | null = null;
 
-  // Reemplazá con tu URL base de MockAPI si es distinta
+  // URL MockAPI
   private apiUrl = 'https://6a8da136baf2ac84246d4bb1.mockapi.io/api/v1';
 
   constructor(
